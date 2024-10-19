@@ -1,0 +1,23 @@
+# Use the official CUDA 12.1 base image with Ubuntu
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+
+# Install Python and other necessary packages
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip
+RUN python3 -m pip install --upgrade pip
+
+# Install any Python packages you need (e.g., numpy, torch)
+RUN python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+RUN python3 -m pip install transformers[torch]
+RUN python3 -m pip install datasets sentence_transformers numpy sentencepiece gguf protobuf chromadb matplotlib
+
+# Optional: Set python3 as default python
+# RUN ln -s /usr/bin/python3 /usr/bin/python
+
+COPY requirements.txt /opt/app/requirements.txt
+WORKDIR /opt/app
+# RUN pip install -r requirements.txt
+COPY . /opt/app
