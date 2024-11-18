@@ -13,11 +13,9 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 RUN python3 -m pip install transformers[torch]
 RUN python3 -m pip install datasets sentence_transformers numpy sentencepiece gguf protobuf chromadb matplotlib
+RUN python3 -m pip install peft accelerate
 
 # Optional: Set python3 as default python
 # RUN ln -s /usr/bin/python3 /usr/bin/python
 
-COPY requirements.txt /opt/app/requirements.txt
-WORKDIR /opt/app
 # RUN pip install -r requirements.txt
-COPY . /opt/app

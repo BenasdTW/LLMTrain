@@ -10,7 +10,9 @@
 	},
 	"runArgs": [
 		"--gpus",
-		"all"
+		"all",
+		// "-p=8888:8888",
+		"--shm-size=16g"
 	],
 	"customizations": {
 		"vscode": {
@@ -28,11 +30,16 @@
 	},
 	"mounts": [
 		"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
-	],
-	"postCreateCommand": "git config --global --add safe.directory /workspaces/RMAFineTune"
+	]
+	// "postCreateCommand": "git config --global --add safe.directory /workspaces/RMAFineTune",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	// "features": {
+	// 	"ghcr.io/duduribeiro/devcontainer-features/neovim:1": {
+    //   		"version": "stable"
+	//     }
+
+	// },
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
