@@ -21,7 +21,10 @@
 				"ms-python.isort",
 				"mechatroner.rainbow-csv",
 				"donjayamanne.githistory",
-				"angelo-breuer.clock"
+				"angelo-breuer.clock",
+				"eamodio.gitlens",
+				"mhutchie.git-graph",
+				"VisualStudioExptTeam.vscodeintellicode"
 			]
 		}
 		// "settings": {
