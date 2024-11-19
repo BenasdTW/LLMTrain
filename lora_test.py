@@ -1,6 +1,7 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, Trainer
-from datasets import load_dataset
-from peft import LoraConfig, get_peft_model, PeftType, TaskType
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
+from peft import LoraConfig, TaskType, PeftModel, get_peft_model
+from datasets import Dataset, load_dataset
 
 # Step 1: 加載預訓練模型和標籤器
 model_name = "gpt2"  # 替換為所需模型
@@ -15,8 +16,9 @@ lora_config = LoraConfig(
     r=8,                      # LoRA rank
     lora_alpha=32,            # LoRA alpha
     # target_modules=["c_attn"], # 需要應用 LoRA 的模組，例如 GPT 中的注意力層
+    inference_mode=False,
     lora_dropout=0.1,         # Dropout 機率
-    bias="none",              # 不對偏置項進行微調
+    # bias="none",              # 不對偏置項進行微調
     task_type=TaskType.CAUSAL_LM, # 設定任務類型 (因果語言建模)
 )
 
@@ -31,10 +33,19 @@ dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
 train_data = dataset["train"]
 valid_data = dataset["validation"]
 
+# Tokenize data
 def tokenize_function(examples):
-    return tokenizer(examples["text"], padding="max_length", truncation=True, max_length=128)
+    tokenized = tokenizer(
+        examples["text"], truncation=True, padding="max_length", max_length=64
+    )
+    tokenized["labels"] = [
+        [-100 if token == tokenizer.pad_token_id else token for token in ids]
+        for ids in tokenized["input_ids"]
+    ]
+    return tokenized
 
 train_data = train_data.map(tokenize_function, batched=True)
+# tokenized_dataset = tokenized_dataset.remove_columns(["text"]).with_format("torch")
 valid_data = valid_data.map(tokenize_function, batched=True)
 
 # Step 4: 定義訓練參數

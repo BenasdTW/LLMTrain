@@ -48,7 +48,7 @@ tokenized_dataset = tokenized_dataset.remove_columns(["text"]).with_format("torc
 training_args = TrainingArguments(
     output_dir="./lora_finetuned_model",
     per_device_train_batch_size=2,
-    num_train_epochs=3,
+    num_train_epochs=400,
     logging_dir="./logs",
     logging_steps=10,
     save_steps=500,
@@ -78,13 +78,12 @@ peft_model.eval()
 
 # Tokenize the input with attention_mask
 tokenizer.pad_token = tokenizer.eos_token  # Use eos_token as pad_token
-inputs = tokenizer("Tell me a story about", return_tensors="pt", padding=True, truncation=True)
+inputs = tokenizer("Once upon a time, there was", return_tensors="pt", padding=True, truncation=True)
 
 # Move inputs to the same device as the model
 input_ids = inputs["input_ids"].to(device)
 attention_mask = inputs["attention_mask"].to(device)
-print("checkpoint 3")
-print(f"Pad token ID: {tokenizer.pad_token_id}, EOS token ID: {tokenizer.eos_token_id}")
-print(f"Input IDs: {input_ids}, Attention Mask: {attention_mask}")
 outputs = peft_model.generate(input_ids, attention_mask=attention_mask, max_new_tokens=50, pad_token_id=tokenizer.pad_token_id)
+# print(f"Pad token ID: {tokenizer.pad_token_id}, EOS token ID: {tokenizer.eos_token_id}")
+# print(f"Input IDs: {input_ids}, Attention Mask: {attention_mask}")
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
