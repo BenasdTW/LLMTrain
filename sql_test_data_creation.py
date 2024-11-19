@@ -1,11 +1,15 @@
 import pymysql
 
+# docker run --rm --name mariadb-test1 -e MYSQL_ROOT_PASSWORD=test -p 3306:3306 -d mariadb:latest
+# mysql -u root -p -h 127.0.0.1
+# CREATE DATABASE test_db;
+
 # Database connection configuration
 db_config = {
-    'host': '192.168.1.109',      # Or IP of your MySQL server
-    'user': 'root',           # Replace with your username
-    'password': 'test',
-    'database': 'test_db',    # Replace with your database name
+    "host": "140.118.152.230",
+    "user": "root",
+    "password": "test",
+    "database": "test_db",
 }
 
 # Data to insert

@@ -12,7 +12,7 @@
 		"--gpus",
 		"all",
 		// "-p=8888:8888",
-		"--shm-size=16g"
+		"--shm-size=8g"
 	],
 	"customizations": {
 		"vscode": {
@@ -30,10 +30,10 @@
 		// "settings": {
 		// 	"python.defaultInterpreterPath": "/opt/conda/envs/py_3.10/bin/python"
 		// }
-	},
-	"mounts": [
-		"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
-	]
+	}
+	// "mounts": [
+	// 	"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+	// ]
 	// "postCreateCommand": "git config --global --add safe.directory /workspaces/RMAFineTune",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
