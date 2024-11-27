@@ -4,10 +4,16 @@ from peft import LoraConfig, TaskType, PeftModel, get_peft_model
 from datasets import Dataset
 
 # Step 1: Load a Pretrained Model and Tokenizer
-model_name = "gpt2"  # Replace with your model of choice
+model_name = "meta-llama/Llama-3.2-1B"  # 替換為所需模型
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.pad_token = tokenizer.eos_token  # Use eos_token as pad_token
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name, 
+    device_map="auto", 
+    load_in_4bit=True,
+    torch_dtype=torch.float16,  # Match input type
+    bnb_4bit_compute_dtype=torch.float16,  # Set compute dtype to float16
+)
 
 # Step 2: Configure LoRA
 lora_config = LoraConfig(
@@ -56,6 +62,7 @@ training_args = TrainingArguments(
     save_total_limit=2,
     learning_rate=5e-5,
     weight_decay=0.01
+    # fp16=True,  # 如果 GPU 支持，可以啟用混合精度訓練
 )
 
 # Step 6: Initialize Trainer

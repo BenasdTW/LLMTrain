@@ -5,17 +5,40 @@ from datasets import Dataset, load_dataset
 
 # Step 1: 加載預訓練模型和標籤器
 model_name = "meta-llama/Llama-3.2-1B"  # 替換為所需模型
-model = AutoModelForCausalLM.from_pretrained(
-    model_name, 
-    device_map="auto", 
-    load_in_4bit=True,
-    torch_dtype=torch.float16,  # Match input type
-    bnb_4bit_compute_dtype=torch.float16,  # Set compute dtype to float16
-)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-# 確保標籤器支持自動填充
 tokenizer.pad_token = tokenizer.eos_token
+
+wikisql = load_dataset("wikisql")
+
+# Tokenize data
+def tokenize_function(examples):
+    tokenized = tokenizer(
+        examples["text"], truncation=True, padding="max_length", max_length=64
+    )
+    tokenized["labels"] = [
+        [-100 if token == tokenizer.pad_token_id else token for token in ids]
+        for ids in tokenized["input_ids"]
+    ]
+    return tokenized
+
+def preprocess(example):
+    question = example["question"]
+    print(question)
+    # print(example["sql"])
+    ground_truth_sql = example["sql"][0]["human_readable"]
+    ground_truth_sql = ground_truth_sql.strip()
+    
+    # Generate SQL query using the model
+    prompt = f"You are a Text-to-SQL model. Please directly translate this question to SQL query. Do not explain anything. Question: {question}"
+    tokenized = tokenizer(prompt, text_target=ground_truth_sql, truncation=True)
+    return tokenized
+
+train_data = wikisql["train"]
+valid_data = wikisql["validation"]
+
+valid_data = valid_data.map(preprocess, batched=True)
+train_data = train_data.map(preprocess, batched=True)
 
 # Step 2: 定義 LoRA 配置
 lora_config = LoraConfig(
@@ -32,29 +55,9 @@ model = get_peft_model(model, lora_config)
 # Step 4: Print Trainable Parameters
 model.print_trainable_parameters()
 
-# Step 3: 加載訓練數據
-dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
-train_data = dataset["train"]
-valid_data = dataset["validation"]
-
-# Tokenize data
-def tokenize_function(examples):
-    tokenized = tokenizer(
-        examples["text"], truncation=True, padding="max_length", max_length=64
-    )
-    tokenized["labels"] = [
-        [-100 if token == tokenizer.pad_token_id else token for token in ids]
-        for ids in tokenized["input_ids"]
-    ]
-    return tokenized
-
-train_data = train_data.map(tokenize_function, batched=True)
-# tokenized_dataset = tokenized_dataset.remove_columns(["text"]).with_format("torch")
-valid_data = valid_data.map(tokenize_function, batched=True)
-
 # Step 4: 定義訓練參數
 training_args = TrainingArguments(
-    output_dir="./lora_gpt2",
+    output_dir="./lora_text2sql_llama",
     evaluation_strategy="steps",
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
@@ -80,5 +83,5 @@ trainer = Trainer(
 trainer.train()
 
 # Step 6: 儲存微調後的模型
-model.save_pretrained("./lora_gpt2")
-tokenizer.save_pretrained("./lora_gpt2")
+model.save_pretrained("./lora_text2sql_llama")
+tokenizer.save_pretrained("./lora_text2sql_llama")
