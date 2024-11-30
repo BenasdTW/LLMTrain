@@ -9,10 +9,9 @@
 		"dockerfile": "../Dockerfile.cuda"
 	},
 	"runArgs": [
-		"--gpus",
-		"all",
-		// "-p=8888:8888",
-		"--shm-size=8g"
+		"--gpus", "all",
+		"--name", "iddt-ben-0",
+		"--shm-size=16g"
 	],
 	"customizations": {
 		"vscode": {
@@ -30,10 +29,7 @@
 		// "settings": {
 		// 	"python.defaultInterpreterPath": "/opt/conda/envs/py_3.10/bin/python"
 		// }
-	},
-	"mounts": [
-		"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
-	]
+	}
 	// "postCreateCommand": "git config --global --add safe.directory /workspaces/RMAFineTune",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
