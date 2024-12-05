@@ -20,6 +20,7 @@ lora_config = LoraConfig(
     task_type=TaskType.CAUSAL_LM,
     inference_mode=False,
     r=16,
+    bias="none",
     lora_alpha=32,
     lora_dropout=0.1
 )
@@ -54,15 +55,15 @@ tokenized_dataset = tokenized_dataset.remove_columns(["text"]).with_format("torc
 training_args = TrainingArguments(
     output_dir="./lora_finetuned_model",
     per_device_train_batch_size=2,
-    num_train_epochs=400,
+    num_train_epochs=200,
     logging_dir="./logs",
     logging_steps=10,
     save_steps=500,
     evaluation_strategy="no",
     save_total_limit=2,
     learning_rate=5e-5,
-    weight_decay=0.01
-    # fp16=True,  # 如果 GPU 支持，可以啟用混合精度訓練
+    weight_decay=0.01,
+    fp16=True,  # 如果 GPU 支持，可以啟用混合精度訓練
 )
 
 # Step 6: Initialize Trainer

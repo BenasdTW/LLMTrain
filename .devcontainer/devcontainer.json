@@ -30,10 +30,10 @@
 		// "settings": {
 		// 	"python.defaultInterpreterPath": "/opt/conda/envs/py_3.10/bin/python"
 		// }
-	},
-	"mounts": [
-		"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
-	]
+	}
+	// "mounts": [
+	// 	"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind"
+	// ]
 	// "postCreateCommand": "git config --global --add safe.directory /workspaces/RMAFineTune",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
