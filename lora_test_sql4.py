@@ -1,8 +1,9 @@
 import os
 import torch
 from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments
+from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, BitsAndBytesConfig
 from peft import LoraConfig, get_peft_model, PeftConfig
+from trl import SFTTrainer
 from transformers.trainer_utils import IntervalStrategy
 
 # Load the Dataset
@@ -48,20 +49,25 @@ You are a text-to-SQL model. Please generate a SQL query command according to th
 
 
 # model_name = "meta-llama/Llama-3.2-1B"
-model_name = "meta-llama/Llama-3.2-3B-Instruct"
+model_name = "meta-llama/Llama-3.1-8B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 # tokenizer.pad_token = tokenizer.eos_token
 tokenizer.pad_token = "<|finetune_right_pad_id|>"
 tokenized_dataset = dataset.map(preprocess_function, batched=True)
 tokenized_test_dataset = test_dataset.map(preprocess_function, batched=True)
 
+quantization_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_compute_dtype=torch.bfloat16,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type='nf4'
+)
 # Load the Base Model
 model = AutoModelForCausalLM.from_pretrained(
     model_name, 
     device_map="auto", 
-    load_in_4bit=True,
+    quantization_config=quantization_config,
     torch_dtype=torch.bfloat16,  # Match input type
-    bnb_4bit_compute_dtype=torch.bfloat16,  # Set compute dtype to float16
 )
 
 # Configure QLoRA with PEFT
@@ -74,23 +80,20 @@ lora_config = LoraConfig(
     task_type="CAUSAL_LM"
 )
 
-model = get_peft_model(model, lora_config)
-model.print_trainable_parameters()
 
 # Define Training Arguments
 training_args = TrainingArguments(
     output_dir="./output",
-    per_device_train_batch_size=6,
-    per_device_eval_batch_size=6,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
     gradient_accumulation_steps=16,
     learning_rate=2e-4,
-    num_train_epochs=1,
+    num_train_epochs=10,
     logging_dir="./logs",
     logging_steps=10,
     save_strategy=IntervalStrategy.EPOCH,
     eval_strategy=IntervalStrategy.EPOCH,
     save_total_limit=1,
-    # fp16=True,
     bf16=True,
     optim="adamw_torch",
     report_to="none",
@@ -98,20 +101,27 @@ training_args = TrainingArguments(
     gradient_checkpointing_kwargs={"use_reentrant": True}
 )
 
-# Define the Trainer
-from transformers import Trainer
 
-trainer = Trainer(
+trainer = SFTTrainer(
     model=model,
+    peft_config=lora_config,
     args=training_args,
     train_dataset=tokenized_dataset,
     eval_dataset=tokenized_test_dataset,
     tokenizer=tokenizer,
 )
 
+# handle PEFT+FSDP case
+trainer.model.print_trainable_parameters()
+# if getattr(trainer.accelerator.state, "fsdp_plugin", None):
+#     from peft.utils.other import fsdp_auto_wrap_policy
+
+#     fsdp_plugin = trainer.accelerator.state.fsdp_plugin
+#     fsdp_plugin.auto_wrap_policy = fsdp_auto_wrap_policy(trainer.model)
+
 # Train the Model
 trainer.train()
 
 # Save the Model
-model.save_pretrained("./finetuned-llama-text2sql")
+trainer.model.save_pretrained("./finetuned-llama-text2sql")
 tokenizer.save_pretrained("./finetuned-llama-text2sql")

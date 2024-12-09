@@ -1,11 +1,26 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from datasets import load_dataset
 import torch
 
 # Load the WikiSQL dataset and the fine-tuned model
-# model_name = "meta-llama/Llama-3.2-1B"  # 替換為所需模型
-model_name = "./finetuned-llama-text2sql"  # 替換為所需模型
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)  # Match input type
+# model_name = "meta-llama/Llama-3.2-1B"
+model_name = "meta-llama/Llama-3.1-8B-Instruct"
+# model_name = "./finetuned-llama-text2sql"
+
+quantization_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_compute_dtype=torch.bfloat16,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type='nf4'
+)
+# Load the Base Model
+model = AutoModelForCausalLM.from_pretrained(
+    model_name, 
+    device_map="auto", 
+    quantization_config=quantization_config,
+    torch_dtype=torch.bfloat16,  # Match input type
+)
+# model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)  # Match input type
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 tokenizer.pad_token = tokenizer.eos_token
