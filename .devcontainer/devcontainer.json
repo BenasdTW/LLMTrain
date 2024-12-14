@@ -22,7 +22,8 @@
 				"angelo-breuer.clock",
 				"eamodio.gitlens",
 				"mhutchie.git-graph",
-				"VisualStudioExptTeam.vscodeintellicode"
+				"VisualStudioExptTeam.vscodeintellicode",
+				"qwtel.sqlite-viewer"
 			]
 		},
 		"settings": {

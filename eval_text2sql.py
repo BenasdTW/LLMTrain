@@ -1,13 +1,7 @@
 from ollama import Client
 from query import query
 
-db_config = {
-    "host": "140.118.152.230",
-    "user": "root",
-    "password": "test",
-    "database": "test_db",
-}
-
+db_name = "db/test.db"
 client = Client(host="http://172.17.0.1:11434/")
 model = "duckdb-nsql"
 
@@ -48,6 +42,6 @@ print(r["response"])
 print()
 
 print("Query result:")
-print(query(db_config, r["response"]))
+print(query(db_name, r["response"]))
 print()
 
