@@ -5,9 +5,11 @@ from peft import LoraConfig
 from datasets import load_dataset
 from torch.utils.data import Dataset
 from transformers.trainer_utils import IntervalStrategy
-from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, BitsAndBytesConfig
+from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
+# from transformers import AutoModelForCausalLM
+from liger_kernel.transformers import AutoLigerKernelForCausalLM
 
-model_name = "meta-llama/Llama-3.2-3B"
+model_name = "meta-llama/Llama-3.1-8B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 tokenizer.pad_token = "<|finetune_right_pad_id|>"
@@ -44,16 +46,17 @@ class NSText2SQLDataset(Dataset):
             
         return model_inputs
 
-dataset = NSText2SQLDataset(size=1000, max_length=400)
+dataset = NSText2SQLDataset(size=100000, max_length=400)
 
 quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_compute_dtype=torch.bfloat16,
-    bnb_4bit_use_double_quant=True,
+    # bnb_4bit_use_double_quant=True,
     bnb_4bit_quant_type='nf4'
 )
 # Load the Base Model
-model = AutoModelForCausalLM.from_pretrained(
+model = AutoLigerKernelForCausalLM.from_pretrained(
+# model = AutoModelForCausalLM.from_pretrained(
     model_name, 
     device_map="auto", 
     quantization_config=quantization_config,
@@ -64,7 +67,7 @@ model = AutoModelForCausalLM.from_pretrained(
 lora_config = LoraConfig(
     r=64,
     lora_alpha=16,
-    target_modules=["q_proj", "v_proj"],  # Target attention layers
+    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],  # Target attention layers
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM"
@@ -74,8 +77,8 @@ lora_config = LoraConfig(
 # Define Training Arguments
 training_args = TrainingArguments(
     output_dir="./output",
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
+    per_device_train_batch_size=24,
+    per_device_eval_batch_size=24,
     gradient_accumulation_steps=16,
     learning_rate=2e-4,
     num_train_epochs=2,
@@ -107,7 +110,7 @@ trainer = SFTTrainer(
 trainer.model.print_trainable_parameters()
 trainer.train()
 
-output_dir = "test"
+output_dir = "test2"
 trainer.model.save_pretrained(output_dir)
 tokenizer.save_pretrained(output_dir)
 

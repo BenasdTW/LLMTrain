@@ -1,4 +1,5 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import AutoTokenizer, BitsAndBytesConfig
+from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from datasets import load_dataset
 import torch
 
@@ -9,20 +10,19 @@ import torch
 # model_name = "./new-text2sql"
 model_name = "./test"
 
-quantization_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_compute_dtype=torch.bfloat16,
-    # bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_type='nf4'
-)
+# quantization_config = BitsAndBytesConfig(
+#     load_in_4bit=True,
+#     bnb_4bit_compute_dtype=torch.bfloat16,
+#     bnb_4bit_use_double_quant=True,
+#     bnb_4bit_quant_type='nf4'
+# )
 # Load the Base Model
-model = AutoModelForCausalLM.from_pretrained(
+model = AutoLigerKernelForCausalLM.from_pretrained(
     model_name, 
     device_map="auto", 
-    quantization_config=quantization_config,
+    # quantization_config=quantization_config,
     torch_dtype=torch.bfloat16,  # Match input type
 )
-# model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)  # Match input type
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 tokenizer.pad_token = tokenizer.eos_token
