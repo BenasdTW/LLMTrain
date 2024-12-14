@@ -23,12 +23,13 @@
 				"angelo-breuer.clock",
 				"eamodio.gitlens",
 				"mhutchie.git-graph",
-				"VisualStudioExptTeam.vscodeintellicode"
+				"VisualStudioExptTeam.vscodeintellicode",
+				"qwtel.sqlite-viewer"
 			]
+		},
+		"settings": {
+			"python.defaultInterpreterPath": "/usr/local/bin/python"
 		}
-		// "settings": {
-		// 	"python.defaultInterpreterPath": "/opt/conda/envs/py_3.10/bin/python"
-		// }
 	}
 	// "postCreateCommand": "git config --global --add safe.directory /workspaces/RMAFineTune",
 

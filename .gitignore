@@ -3,3 +3,7 @@ lora_finetuned_model/
 lora_gpt2/
 finetuned-llama-text2sql/
 output/
+new-text2sql/
+test/
+
+token.txt
