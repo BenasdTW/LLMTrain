@@ -1,12 +1,12 @@
 import torch
 import json
+from datetime import datetime
 from trl import SFTTrainer
 from peft import LoraConfig
 from datasets import load_dataset
 from torch.utils.data import Dataset
 from transformers.trainer_utils import IntervalStrategy
 from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
-# from transformers import AutoModelForCausalLM
 from liger_kernel.transformers import AutoLigerKernelForCausalLM
 
 model_name = "meta-llama/Llama-3.1-8B-Instruct"
@@ -17,8 +17,8 @@ print(f"{tokenizer.eos_token_id=}")
 print(f"{tokenizer.pad_token_id=}")
 
 class NSText2SQLDataset(Dataset):
-    def __init__(self, size=None, max_length=2048):
-        self.dataset = load_dataset("NumbersStation/NSText2SQL",split="train")
+    def __init__(self, size=None, max_length=2048, split="train"):
+        self.dataset = load_dataset("NumbersStation/NSText2SQL", split=split)
         if size:
             self.dataset = self.dataset.select(range(size))
         self.max_length = max_length
@@ -47,6 +47,8 @@ class NSText2SQLDataset(Dataset):
         return model_inputs
 
 dataset = NSText2SQLDataset(size=100000, max_length=400)
+dataset, eval_set = torch.utils.data.random_split(dataset, [0.99, 0.01])
+print(f"{len(dataset)=} {len(eval_set)=}")
 
 quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -56,9 +58,9 @@ quantization_config = BitsAndBytesConfig(
 )
 # Load the Base Model
 model = AutoLigerKernelForCausalLM.from_pretrained(
-# model = AutoModelForCausalLM.from_pretrained(
     model_name, 
     device_map="auto", 
+    use_cache=False,
     quantization_config=quantization_config,
     torch_dtype=torch.bfloat16,  # Match input type
 )
@@ -75,17 +77,22 @@ lora_config = LoraConfig(
 
 
 # Define Training Arguments
+# Effective batch size = per_device_train_batch_size * gradient_accumulation_steps
+#     = 128
 training_args = TrainingArguments(
     output_dir="./output",
-    per_device_train_batch_size=24,
-    per_device_eval_batch_size=24,
-    gradient_accumulation_steps=16,
+    per_device_train_batch_size=16,
+    gradient_accumulation_steps=8,
+    per_device_eval_batch_size=1,
+    eval_accumulation_steps=20,
+    # torch_empty_cache_steps=1,
     learning_rate=2e-4,
-    num_train_epochs=2,
+    num_train_epochs=1,
+    # use_liger_kernel=True,
     logging_dir="./logs",
     logging_steps=1,
     save_strategy=IntervalStrategy.EPOCH,
-    # eval_strategy=IntervalStrategy.EPOCH,
+    eval_strategy=IntervalStrategy.EPOCH,
     save_total_limit=1,
     bf16=True,
     optim="adamw_torch",
@@ -94,19 +101,17 @@ training_args = TrainingArguments(
     gradient_checkpointing_kwargs={"use_reentrant": False}
 )
 
-
 trainer = SFTTrainer(
     model=model,
     peft_config=lora_config,
     args=training_args,
     train_dataset=dataset,
-    # eval_dataset=tokenized_test_dataset,
+    eval_dataset=eval_set,
     tokenizer=tokenizer,
 )
 
 
 # Start training
-
 trainer.model.print_trainable_parameters()
 trainer.train()
 
@@ -114,7 +119,14 @@ output_dir = "test2"
 trainer.model.save_pretrained(output_dir)
 tokenizer.save_pretrained(output_dir)
 
-with open("trainer.log", "w") as f:
+
+# Format it as "MMDD-hhmmss"
+now = datetime.now()
+formatted_time = now.strftime("%m%d-%H%M%S")
+
+print(f"Saved log to ./logs/{formatted_time}-trainer.log")
+
+with open(f"./logs/{formatted_time}-trainer.log", "w") as f:
     for obj in trainer.state.log_history:
         obj_str = json.dumps(obj)
         f.write(obj_str)

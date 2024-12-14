@@ -2,6 +2,7 @@ import os
 import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, BitsAndBytesConfig
+from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from peft import LoraConfig, get_peft_model, PeftConfig
 from trl import SFTTrainer
 from transformers.trainer_utils import IntervalStrategy
@@ -10,25 +11,8 @@ from transformers.trainer_utils import IntervalStrategy
 dataset = load_dataset("spider", split="train")  # Example: Spider text-to-SQL dataset
 test_dataset = load_dataset("spider", split="validation")
 
-# model_template = """<|start_header_id|>system<|end_header_id|>
 
-# You are a text-to-SQL model. Please generate a SQL query command according to the user input. Only generates the SQL query, do not explain anything.
-# This is the SQL schema:
-# {{ .Schema }}
-# <|eot_id|>
-# <|start_header_id|>user<|end_header_id|>
-
-# {{ .TextQuery }}<|eot_id|>
-# <|start_header_id|>assistant<|end_header_id|>
-
-# {{ .SQLQuery }}
-# """
-# Preprocess the Dataset
-def preprocess_function(examples):
-    prompts = []
-    for question, query in zip(examples["question"], examples["query"]):
-        
-        model_template = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+model_template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 You are a text-to-SQL model. Please generate a SQL query command according to the user input. Only generates the SQL query, do not explain anything.
 <|eot_id|>
@@ -38,13 +22,18 @@ You are a text-to-SQL model. Please generate a SQL query command according to th
 <|start_header_id|>assistant<|end_header_id|>
 
 {query}<|end_of_text|>"""
-        prompts.append(model_template)
-    # prompts = ["Generate an SQL query for the given question: " + question for question in examples["question"]]
-    # targets = examples["query"]
+
+# Preprocess the Dataset
+def preprocess_function(examples):
+    prompts = []
+    for question, query in zip(examples["question"], examples["query"]):
+        
+        formatted = model_template.format(question=question, query=query)
+        prompts.append(formatted)
+
     model_inputs = tokenizer(prompts, truncation=True, padding="max_length", max_length=256)
     model_inputs["labels"] = model_inputs["input_ids"].copy()  # Labels for causal LM
-    # labels = tokenizer(targets, truncation=True, padding="max_length", max_length=256)["input_ids"]
-    # model_inputs["labels"] = labels
+
     return model_inputs
 
 
