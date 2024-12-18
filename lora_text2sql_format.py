@@ -1,3 +1,4 @@
+import re
 import torch
 import json
 from datetime import datetime
@@ -9,16 +10,70 @@ from transformers.trainer_utils import IntervalStrategy
 from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
 from liger_kernel.transformers import AutoLigerKernelForCausalLM
 
-model_name = "meta-llama/Llama-3.1-8B-Instruct"
+model_name = "meta-llama/Llama-3.2-1B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 tokenizer.pad_token = "<|finetune_right_pad_id|>"
 print(f"{tokenizer.eos_token_id=}")
 print(f"{tokenizer.pad_token_id=}")
 
+# model_template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+# {schema}
+
+# -- {system}
+# <|eot_id|>
+# <|start_header_id|>user<|end_header_id|>
+
+# {question}<|eot_id|>
+# <|start_header_id|>assistant<|end_header_id|>
+
+# {query}<|end_of_text|>"""
+model_template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+{schema}
+
+-- {system}
+<|eot_id|>
+<|start_header_id|>user<|end_header_id|>
+
+{question}<|eot_id|>
+<|start_header_id|>assistant<|end_header_id|>
+
+"""
+
+# output_template = "{query}<|end_of_text|>"
+
+def split_string(input_string):
+    # Split using '--', allowing optional newlines (\n) before/after
+    parts = re.split(r"\s*\n?\s*--\s*\n?\s*", input_string.strip())
+    # Filter out empty strings
+    return [part.strip() for part in parts if part.strip()]
+
+def tokenize(inst, output, max_length):
+    split = split_string(inst)
+    if len(split) != 3:
+        # 26 fails
+        return None, None
+    input_str = model_template.format(schema=split[0], system=split[1], question=split[2])
+    instruction_len = len(torch.tensor(tokenizer.encode(input_str), dtype=torch.int64))
+
+    input_str = input_str + output + tokenizer.eos_token
+    model_inputs = tokenizer(input_str, max_length=max_length, padding="max_length", return_tensors="pt")
+    return model_inputs, instruction_len
+    
+def filter_by_token_count(x, max_length):
+    # Tokenize the text and check the length
+    model_inputs, _ = tokenize(x["instruction"], x["output"], max_length)
+    if model_inputs is None:
+        return False
+    return len(model_inputs["input_ids"].squeeze(0)) <= max_length
+
 class NSText2SQLDataset(Dataset):
     def __init__(self, size=None, max_length=2048, split="train"):
-        self.dataset = load_dataset("NumbersStation/NSText2SQL", split=split)
+        dataset = load_dataset("NumbersStation/NSText2SQL", split=split)
+        self.dataset = dataset.filter(lambda x: filter_by_token_count(x, max_length))
+        print(len(self.dataset))
         if size:
             self.dataset = self.dataset.select(range(size))
         self.max_length = max_length
@@ -31,9 +86,8 @@ class NSText2SQLDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index):
-        instruction_len = len(torch.tensor(tokenizer.encode(self.dataset[index]['instruction']), dtype=torch.int64))
-        input_str = self.dataset[index]['instruction'] + self.dataset[index]["output"] + self.eos_token
-        model_inputs = tokenizer(input_str, max_length=self.max_length, padding="max_length", truncation=True, return_tensors="pt")
+
+        model_inputs, instruction_len = tokenize(self.dataset[index]["instruction"], self.dataset[index]["output"], self.max_length)
 
         model_inputs["input_ids"] = model_inputs["input_ids"].squeeze(0)
         model_inputs["attention_mask"] = model_inputs["attention_mask"].squeeze(0)
@@ -46,7 +100,7 @@ class NSText2SQLDataset(Dataset):
             
         return model_inputs
 
-# 1B: 1:55:43, 3B: 4:59:29, 8B: 10:29:01
+# 1B: 1:55:43, 3B: 5:05:03
 dataset = NSText2SQLDataset(size=102500, max_length=512)
 dataset, eval_set = torch.utils.data.random_split(dataset, [102400, 100])
 print(f"{len(dataset)=} {len(eval_set)=}")
@@ -84,8 +138,8 @@ training_args = TrainingArguments(
     output_dir="./output",
     per_device_train_batch_size=16,
     gradient_accumulation_steps=16,
-    per_device_eval_batch_size=2,
-    eval_accumulation_steps=8,
+    per_device_eval_batch_size=4,
+    eval_accumulation_steps=4,
     # torch_empty_cache_steps=1,
     learning_rate=2e-4,
     num_train_epochs=1,
@@ -118,7 +172,7 @@ trainer = SFTTrainer(
 trainer.model.print_trainable_parameters()
 trainer.train()
 
-output_dir = "text2sql-8b-Instruct"
+output_dir = "text2sql-1b-Instruct-format"
 trainer.model.save_pretrained(output_dir)
 tokenizer.save_pretrained(output_dir)
 

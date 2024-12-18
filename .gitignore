@@ -4,7 +4,8 @@ lora_gpt2/
 finetuned-llama-text2sql/
 output/
 new-text2sql/
-test/
-test2/
+test*/
+text2sql*/
 
 token.txt
+t.py
