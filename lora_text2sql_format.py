@@ -56,7 +56,7 @@ def tokenize(inst, output, max_length):
         # 26 fails
         return None, None
     input_str = model_template.format(schema=split[0], system=split[1], question=split[2])
-    instruction_len = len(torch.tensor(tokenizer.encode(input_str), dtype=torch.int64))
+    instruction_len = len(torch.tensor(tokenizer.encode(input_str), dtype=torch.int32))
 
     input_str = input_str + output + tokenizer.eos_token
     model_inputs = tokenizer(input_str, max_length=max_length, padding="max_length", return_tensors="pt")
