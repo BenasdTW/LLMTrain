@@ -57,7 +57,6 @@ class NSText2SQLDataset(Dataset):
         # Mask out the paddings
         labels[labels == tokenizer.pad_token_id] = -100
         model_inputs["labels"] = labels
-        print(model_inputs)
             
         return model_inputs
 
