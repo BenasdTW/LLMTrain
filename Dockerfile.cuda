@@ -20,7 +20,8 @@ RUN python3 -m pip install datasets numpy sentencepiece gguf protobuf matplotlib
 RUN python3 -m pip install bitsandbytes
 RUN python3 -m pip install ollama
 RUN python3 -m pip install liger-kernel
-RUN python3 -m pip install pymysql
+RUN python3 -m pip install llama-recipes
+# RUN python3 -m pip install pymysql
 # RUN python3 -m pip install ollama pandas pymysql
 
 # Optional: Set python3 as default python
