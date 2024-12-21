@@ -6,12 +6,6 @@ import matplotlib.pyplot as plt
 
 
 def parse_log_file(file_path):
-    """
-    Parses a log file to extract training and evaluation losses.
-    
-    Returns:
-        A dictionary with steps and losses for training and evaluation.
-    """
     losses = {
         "train": {"steps": [], "losses": []},
         "eval": {"steps": [], "losses": []},
@@ -32,10 +26,7 @@ def parse_log_file(file_path):
 
 
 def plot_in_grid(loss_dicts, file_names):
-    """
-    Plots training and evaluation losses in a 2x3 grid and saves each plot individually.
-    """
-    sns.set(style="whitegrid")
+    sns.set_theme(style="whitegrid")
     fig, axes = plt.subplots(2, 3, figsize=(18, 10))  # Create a 2x3 grid of subplots
     axes = axes.flatten()  # Flatten the axes array for easy indexing
 
@@ -82,13 +73,22 @@ def plot_in_grid(loss_dicts, file_names):
 
 
 # Main script to parse logs and plot losses
+# log_file_names = [
+#     "text2sql-1b.log",
+#     "text2sql-3b.log",
+#     "text2sql-8b.log",
+#     "text2sql-1b-Instruct.log",
+#     "text2sql-3b-Instruct.log",
+#     "text2sql-8b-Instruct.log",
+# ]
+
 log_file_names = [
-    "text2sql-1b.log",
-    "text2sql-3b.log",
-    "text2sql-8b.log",
-    "text2sql-1b-Instruct.log",
-    "text2sql-3b-Instruct.log",
-    "text2sql-8b-Instruct.log",
+    "text2sql-1b-Instruct-2.log",
+    "text2sql-3b-Instruct-2.log",
+    "text2sql-8b-Instruct-2.log",
+    "text2sql-1b-Instruct-format.log",
+    "text2sql-3b-Instruct-format.log",
+    "text2sql-8b-Instruct-format.log",
 ]
 
 log_dir = "./logs/"

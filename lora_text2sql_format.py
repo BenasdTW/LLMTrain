@@ -10,7 +10,7 @@ from transformers.trainer_utils import IntervalStrategy
 from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
 from liger_kernel.transformers import AutoLigerKernelForCausalLM
 
-model_name = "meta-llama/Llama-3.2-1B-Instruct"
+model_name = "meta-llama/Llama-3.1-8B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 tokenizer.pad_token = "<|finetune_right_pad_id|>"
@@ -100,7 +100,7 @@ class NSText2SQLDataset(Dataset):
             
         return model_inputs
 
-# 1B: 1:55:43, 3B: 5:05:03
+# max_length = 512: 220425
 dataset = NSText2SQLDataset(size=102500, max_length=512)
 dataset, eval_set = torch.utils.data.random_split(dataset, [102400, 100])
 print(f"{len(dataset)=} {len(eval_set)=}")
@@ -124,13 +124,14 @@ model = AutoLigerKernelForCausalLM.from_pretrained(
 lora_config = LoraConfig(
     r=64,
     lora_alpha=16,
-    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],  # Target attention layers
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # Target attention layers
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM"
 )
 
 
+# 1B: 1:55:43, 3B: 4:59:29, 8B: 10:29:01
 # Define Training Arguments
 # Effective batch size = per_device_train_batch_size * gradient_accumulation_steps
 #     = 256
@@ -138,8 +139,8 @@ training_args = TrainingArguments(
     output_dir="./output",
     per_device_train_batch_size=16,
     gradient_accumulation_steps=16,
-    per_device_eval_batch_size=4,
-    eval_accumulation_steps=4,
+    per_device_eval_batch_size=2,
+    eval_accumulation_steps=8,
     # torch_empty_cache_steps=1,
     learning_rate=2e-4,
     num_train_epochs=1,
@@ -172,7 +173,7 @@ trainer = SFTTrainer(
 trainer.model.print_trainable_parameters()
 trainer.train()
 
-output_dir = "text2sql-1b-Instruct-format"
+output_dir = "text2sql-8b-Instruct-format"
 trainer.model.save_pretrained(output_dir)
 tokenizer.save_pretrained(output_dir)
 
