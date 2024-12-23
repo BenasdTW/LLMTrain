@@ -25,9 +25,9 @@ def parse_log_file(file_path):
     return losses
 
 
-def plot_in_grid(loss_dicts, file_names):
+def plot_in_grid(loss_dicts, file_names, size=(2, 3)):
     sns.set_theme(style="whitegrid")
-    fig, axes = plt.subplots(2, 3, figsize=(18, 10))  # Create a 2x3 grid of subplots
+    fig, axes = plt.subplots(size[0], size[1], figsize=(18, 10))  # Create a 2x3 grid of subplots
     axes = axes.flatten()  # Flatten the axes array for easy indexing
 
     for idx, (loss_dict, file_name) in enumerate(zip(loss_dicts, file_names)):
@@ -82,13 +82,19 @@ def plot_in_grid(loss_dicts, file_names):
 #     "text2sql-8b-Instruct.log",
 # ]
 
+# log_file_names = [
+#     "text2sql-1b-Instruct-2.log",
+#     "text2sql-3b-Instruct-2.log",
+#     "text2sql-8b-Instruct-2.log",
+#     "text2sql-1b-Instruct-format.log",
+#     "text2sql-3b-Instruct-format.log",
+#     "text2sql-8b-Instruct-format.log",
+# ]
+
 log_file_names = [
-    "text2sql-1b-Instruct-2.log",
-    "text2sql-3b-Instruct-2.log",
-    "text2sql-8b-Instruct-2.log",
-    "text2sql-1b-Instruct-format.log",
-    "text2sql-3b-Instruct-format.log",
-    "text2sql-8b-Instruct-format.log",
+    "text2sql-1b-Instruct-less.log",
+    "text2sql-1b-Instruct-loraplus.log",
+    "text2sql-1b-Instruct-extra.log",
 ]
 
 log_dir = "./logs/"
@@ -102,4 +108,4 @@ for file_name in log_file_names:
     loss_dicts.append(parse_log_file(file_path))
 
 # Plot all losses in a 2x3 grid and save individual plots
-plot_in_grid(loss_dicts, log_file_names)
+plot_in_grid(loss_dicts, log_file_names, (1, 3))
