@@ -3,6 +3,7 @@ lora_finetuned_model/
 lora_gpt2/
 finetuned-llama-text2sql/
 output/
+profile/
 new-text2sql/
 test*/
 text2sql*/

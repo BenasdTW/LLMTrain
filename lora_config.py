@@ -14,10 +14,10 @@ quantization_config = BitsAndBytesConfig(
 # Configure QLoRA with PEFT
 lora_config = LoraConfig(
     r=64,
-    lora_alpha=16,
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # Target attention layers
-    # target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],  # Target attention layers
-    # modules_to_save=["input_layernorm", "post_attention_layernorm", "norm"],
+    lora_alpha=32,
+    # target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # Target attention layers
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],  # Target attention layers
+    modules_to_save=["input_layernorm", "post_attention_layernorm", "norm"],
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM"

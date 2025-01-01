@@ -95,6 +95,7 @@ log_file_names = [
     "text2sql-1b-Instruct-less.log",
     "text2sql-1b-Instruct-loraplus.log",
     "text2sql-1b-Instruct-extra.log",
+    "text2sql-3b-Instruct-loraplus-extra.log",
 ]
 
 log_dir = "./logs/"
@@ -108,4 +109,4 @@ for file_name in log_file_names:
     loss_dicts.append(parse_log_file(file_path))
 
 # Plot all losses in a 2x3 grid and save individual plots
-plot_in_grid(loss_dicts, log_file_names, (1, 3))
+plot_in_grid(loss_dicts, log_file_names, (2, 2))
