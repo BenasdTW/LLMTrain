@@ -29,6 +29,7 @@ model = AutoLigerKernelForCausalLM.from_pretrained(
     model_name, 
     device_map="auto", 
     use_cache=False,
+    attn_implementation="flash_attention_2",
     quantization_config=quantization_config,
     torch_dtype=torch.bfloat16,  # Match input type
 )

@@ -1,6 +1,7 @@
 # Use the official CUDA 12.1 base image with Ubuntu
 # FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
-FROM python:3.12.7
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
+# FROM python:3.12.7
 
 # Install Python and other necessary packages
 RUN apt-get update && \
@@ -15,12 +16,15 @@ RUN python3 -m pip install git+https://github.com/huggingface/transformers
 RUN python3 -m pip install git+https://github.com/huggingface/accelerate
 RUN python3 -m pip install git+https://github.com/huggingface/peft
 RUN python3 -m pip install git+https://github.com/huggingface/trl
-# RUN python3 -m pip install flash-attn --no-build-isolation
+RUN python3 -m pip install flash-attn --no-build-isolation
 RUN python3 -m pip install datasets numpy sentencepiece gguf protobuf matplotlib
 RUN python3 -m pip install bitsandbytes
-RUN python3 -m pip install ollama
+RUN python3 -m pip install autoawq
 RUN python3 -m pip install liger-kernel
 RUN python3 -m pip install llama-recipes
+RUN python3 -m pip install ollama
+RUN python3 -m pip install tensorboardX
+RUN python3 -m pip install qwen-vl-utils[decord]
 # RUN python3 -m pip install pymysql
 # RUN python3 -m pip install ollama pandas pymysql
 

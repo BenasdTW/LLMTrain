@@ -1,6 +1,6 @@
 import re
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-# from liger_kernel.transformers import AutoLigerKernelForCausalLM
+from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from datasets import load_dataset
 import torch
 
@@ -10,7 +10,8 @@ import torch
 # model_name = "./finetuned-llama-text2sql"
 # model_name = "./new-text2sql"
 # model_name = "./text2sql-1b"
-model_name = "./text2sql-1b-Instruct-format"
+# model_name = "./text2sql-1b-Instruct-loraplus"
+model_name = "./merged"
 
 quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -26,6 +27,7 @@ model = AutoModelForCausalLM.from_pretrained(
     # quantization_config=quantization_config,
     torch_dtype=torch.bfloat16,  # Match input type
 )
+print(model)
 # model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)  # Match input type
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.pad_token = tokenizer.eos_token

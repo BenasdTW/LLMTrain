@@ -4,6 +4,7 @@ lora_gpt2/
 finetuned-llama-text2sql/
 output/
 profile/
+merged/
 new-text2sql/
 test*/
 text2sql*/
