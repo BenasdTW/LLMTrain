@@ -12,7 +12,9 @@ RUN apt-get update && \
 RUN python3 -m pip install --upgrade pip
 # Install any Python packages you need (e.g., numpy, torch)
 RUN python3 -m pip install torch torchvision torchaudio
-RUN python3 -m pip install git+https://github.com/huggingface/transformers
+# RUN python3 -m pip install transformers accelerate peft trl
+# RUN python3 -m pip install git+https://github.com/huggingface/transformers
+RUN python3 -m pip install transformers==4.16.3
 RUN python3 -m pip install git+https://github.com/huggingface/accelerate
 RUN python3 -m pip install git+https://github.com/huggingface/peft
 RUN python3 -m pip install git+https://github.com/huggingface/trl
@@ -20,7 +22,7 @@ RUN python3 -m pip install flash-attn --no-build-isolation
 RUN python3 -m pip install datasets numpy sentencepiece gguf protobuf matplotlib
 RUN python3 -m pip install bitsandbytes
 RUN python3 -m pip install autoawq
-RUN python3 -m pip install liger-kernel
+RUN python3 -m pip install liger-kernel-nightly
 RUN python3 -m pip install llama-recipes
 RUN python3 -m pip install ollama
 RUN python3 -m pip install tensorboardX

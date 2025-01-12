@@ -8,6 +8,7 @@ merged/
 new-text2sql/
 test*/
 text2sql*/
+qwen2-*/
 
 token.txt
 t.py
