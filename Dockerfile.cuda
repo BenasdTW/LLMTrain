@@ -14,7 +14,7 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install torch torchvision torchaudio
 # RUN python3 -m pip install transformers accelerate peft trl
 # RUN python3 -m pip install git+https://github.com/huggingface/transformers
-RUN python3 -m pip install transformers==4.16.3
+RUN python3 -m pip install transformers==4.46.3
 RUN python3 -m pip install git+https://github.com/huggingface/accelerate
 RUN python3 -m pip install git+https://github.com/huggingface/peft
 RUN python3 -m pip install git+https://github.com/huggingface/trl
