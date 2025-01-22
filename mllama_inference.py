@@ -2,7 +2,7 @@ import requests
 import torch
 from PIL import Image
 from transformers import MllamaForConditionalGeneration, AutoProcessor
-from lora_config import quantization_config, lora_config
+from configs_and_helpers import quantization_config, lora_config
 from liger_kernel.transformers import apply_liger_kernel_to_mllama
 apply_liger_kernel_to_mllama()
 

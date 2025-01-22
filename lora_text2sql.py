@@ -4,7 +4,7 @@ from trl import SFTTrainer
 from transformers import AutoTokenizer
 from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from RefinedText2SQL import NSText2SQLDataset, NSText2SQLDatasetFormatted, CustomLoggingCallback
-from lora_config import quantization_config, lora_config, training_args
+from configs_and_helpers import quantization_config, lora_config, training_args
 
 
 model_name = "meta-llama/Llama-3.2-1B-Instruct"

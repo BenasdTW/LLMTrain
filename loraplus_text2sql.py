@@ -9,7 +9,7 @@ from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from RefinedText2SQL import NSText2SQLDataset, NSText2SQLDatasetFormatted, CustomLoggingCallback
 from transformers.trainer_utils import IntervalStrategy
 from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
-from lora_config import quantization_config, lora_config
+from configs_and_helpers import quantization_config, lora_config
 
 model_name = "meta-llama/Llama-3.2-3B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
