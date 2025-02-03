@@ -1,6 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model_name_or_path = "meta-llama/Llama-3.2-1B-Instruct"  
+model_name_or_path = "Qwen/Qwen2.5-0.5B-Instruct"  
 model = AutoModelForCausalLM.from_pretrained(model_name_or_path)
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
