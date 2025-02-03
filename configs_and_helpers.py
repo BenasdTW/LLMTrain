@@ -1,8 +1,10 @@
 import time
 import gc
 import torch
+import bitsandbytes as bnb
 from trl import SFTTrainer
 from peft import LoraConfig
+from peft.optimizers import create_loraplus_optimizer
 from transformers.trainer_utils import IntervalStrategy
 from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
 from qwen_vl_utils import process_vision_info
@@ -94,47 +96,68 @@ def generate_text_from_sample(model, processor, sample, max_new_tokens=1024, dev
 quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_compute_dtype=torch.bfloat16,
-    # bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_type='nf4'
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4"
 )
 
 # Configure QLoRA with PEFT
-lora_config = LoraConfig(
-    r=64,
-    lora_alpha=32,
-    # target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # Target attention layers
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],  # Target attention layers
-    modules_to_save=["input_layernorm", "post_attention_layernorm", "norm"],
-    lora_dropout=0.05,
-    bias="none",
-    task_type="CAUSAL_LM"
-)
+def lora_config_builder(r: int = 32, lora_alpha: int = 16, target_modules: str | list = "all-linear", modules_to_save: list = ["input_layernorm", "post_attention_layernorm", "norm"], lora_dropout: float = 0.05):
+    lora_config = LoraConfig(
+        r=r,
+        lora_alpha=lora_alpha,
+        target_modules=target_modules,  # Target attention layers
+        modules_to_save=modules_to_save,
+        lora_dropout=lora_dropout,
+        bias="none",
+        task_type="CAUSAL_LM"
+    )
+    return lora_config
+
 
 
 # 1B: 1:55:43, 3B: 4:59:29, 8B: 10:29:01
 # Define Training Arguments
 # Effective batch size = per_device_train_batch_size * gradient_accumulation_steps
 #     = 256
-training_args = TrainingArguments(
-    output_dir="./output",
-    per_device_train_batch_size=32,
-    gradient_accumulation_steps=8,
-    per_device_eval_batch_size=8,
-    eval_accumulation_steps=4,
-    # torch_empty_cache_steps=1,
-    learning_rate=2e-4,
-    num_train_epochs=3,
-    # use_liger_kernel=True,
-    logging_dir="./logs",
-    logging_steps=1,
-    save_strategy=IntervalStrategy.EPOCH,
-    eval_strategy=IntervalStrategy.STEPS,
-    eval_steps=8,
-    eval_on_start=True,
-    save_total_limit=1,
-    bf16=True,
-    optim="adamw_torch",
-    report_to="none",
-    gradient_checkpointing=True,
-    gradient_checkpointing_kwargs={"use_reentrant": False}
-)
+def training_args_builder(output_name: str, eff_batch: int = 256, device_batch: int = 8, eval_batch = None, eval_accumulation_steps = 1, lr = 2e-4, epochs = 3):
+    if eval_batch is None:
+        eval_batch = device_batch
+    training_args = TrainingArguments(
+        output_dir="./output",
+        per_device_train_batch_size=device_batch,
+        gradient_accumulation_steps=eff_batch // device_batch,
+        per_device_eval_batch_size=eval_batch,
+        eval_accumulation_steps=eval_accumulation_steps,
+        # torch_empty_cache_steps=1,
+        learning_rate=lr,
+        num_train_epochs=epochs,
+        use_liger_kernel=True,
+        logging_dir=f"./profile/{output_name}",
+        logging_steps=1,
+        report_to="tensorboard",
+        save_strategy=IntervalStrategy.EPOCH,
+        eval_strategy=IntervalStrategy.STEPS,
+        eval_steps=8,
+        eval_on_start=True,
+        save_total_limit=1,
+        bf16=True,
+        gradient_checkpointing=True,
+        gradient_checkpointing_kwargs={"use_reentrant": False}
+    )
+    return training_args
+
+def loraplus_optimizer_builder(model, bits=32, lr=2e-4, eps=1e-8, betas=(0.9, 0.999), weight_decay=0.0, loraplus_lr_ratio=16):
+    if bits != 32:
+        optim = bnb.optim.PagedAdamW8bit
+    else:
+        optim = torch.optim.AdamW
+    optimizer = create_loraplus_optimizer(
+        model=model,
+        optimizer_cls=optim,
+        lr=lr,
+        eps=eps,
+        betas=betas,
+        weight_decay=weight_decay,
+        loraplus_lr_ratio=loraplus_lr_ratio,
+    )
+    return optimizer, None

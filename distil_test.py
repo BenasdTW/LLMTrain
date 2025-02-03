@@ -11,6 +11,7 @@ from peft.optimizers import create_loraplus_optimizer
 
 NUM_DUMMY_SAMPLES = 100
 
+output_name = "distiled"
 tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
 # The model to optimize
 model = AutoLigerKernelForCausalLM.from_pretrained(
@@ -78,27 +79,6 @@ eval_dataset = Dataset.from_dict(
         * NUM_DUMMY_SAMPLES
     }
 )
-# training_args = TrainingArguments(
-#     output_dir="./output",
-#     per_device_train_batch_size=16,
-#     gradient_accumulation_steps=16,
-#     per_device_eval_batch_size=8,
-#     eval_accumulation_steps=4,
-#     # torch_empty_cache_steps=1,
-#     num_train_epochs=3,
-#     # use_liger_kernel=True,
-#     logging_dir="./profile",
-#     logging_steps=1,
-#     save_strategy=IntervalStrategy.EPOCH,
-#     eval_strategy=IntervalStrategy.STEPS,
-#     eval_steps=8,
-#     eval_on_start=True,
-#     save_total_limit=1,
-#     bf16=True,
-#     report_to="tensorboard",
-#     gradient_checkpointing=True,
-#     gradient_checkpointing_kwargs={"use_reentrant": False}
-# )
 
 training_args = GKDConfig(
     output_dir="test",
@@ -107,6 +87,9 @@ training_args = GKDConfig(
     eval_strategy=IntervalStrategy.STEPS,
     eval_steps=8,
     # use_liger=True,
+    logging_dir=f"./profile/{output_name}",
+    logging_steps=1,
+    report_to="tensorboard",
     use_liger_kernel=True,
     bf16=True,
     gradient_checkpointing=True,

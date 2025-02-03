@@ -8,6 +8,9 @@ from trl import SFTTrainer
 from transformers.trainer_utils import IntervalStrategy
 
 # Load the Dataset
+
+output_name = "spider_test"
+
 dataset = load_dataset("spider", split="train")  # Example: Spider text-to-SQL dataset
 test_dataset = load_dataset("spider", split="validation")
 
@@ -78,14 +81,14 @@ training_args = TrainingArguments(
     gradient_accumulation_steps=16,
     learning_rate=2e-4,
     num_train_epochs=10,
-    logging_dir="./logs",
-    logging_steps=10,
     save_strategy=IntervalStrategy.EPOCH,
     eval_strategy=IntervalStrategy.EPOCH,
     save_total_limit=1,
     bf16=True,
     optim="adamw_torch",
-    report_to="none",
+    logging_dir=f"./profile/{output_name}",
+    logging_steps=1,
+    report_to="tensorboard",
     gradient_checkpointing=True,
     gradient_checkpointing_kwargs={"use_reentrant": True}
 )

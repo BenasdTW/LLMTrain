@@ -12,6 +12,7 @@ from configs_and_helpers import clear_memory, vl_format_data, generate_text_from
 
 apply_liger_kernel_to_qwen2_vl()
 
+output_name = "qwen2vl_test"
 model_id = "Qwen/Qwen2-VL-2B-Instruct"
 dataset_id = "HuggingFaceM4/ChartQA"
 
