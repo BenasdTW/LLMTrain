@@ -1,0 +1,4 @@
+{"eval_loss": 2.5134224891662598, "eval_runtime": 26.5051, "eval_samples_per_second": 48.293, "eval_steps_per_second": 6.037, "epoch": 0, "step": 0}
+{"loss": 2.465, "grad_norm": 4.2357869148254395, "learning_rate": 4.9833333333333336e-05, "epoch": 0.01, "step": 1}
+{"loss": 2.3564, "grad_norm": 3.22084641456604, "learning_rate": 4.966666666666667e-05, "epoch": 0.02, "step": 2}
+{"loss": 2.2133, "grad_norm": 2.171278953552246, "learning_rate": 4.9500000000000004e-05, "epoch": 0.03, "step": 3}
