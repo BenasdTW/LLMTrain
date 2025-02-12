@@ -2,6 +2,8 @@ __pycache__/
 output/
 profile/
 model/
+logs/
 
 token.txt
 t.py
+t.txt

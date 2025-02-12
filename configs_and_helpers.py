@@ -61,7 +61,6 @@ def clear_memory(scope):
     print(f"GPU allocated memory: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
     print(f"GPU reserved memory: {torch.cuda.memory_reserved() / 1024**3:.2f} GB")
 
-
 def generate_text_from_sample(model, processor, sample, max_new_tokens=1024, device="cuda"):
     # Prepare the text input by applying the chat template
     text_input = processor.apply_chat_template(
