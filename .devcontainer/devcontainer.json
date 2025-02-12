@@ -11,7 +11,8 @@
 	"runArgs": [
 		"--gpus", "all",
 		"--name", "iddt-ben-0",
-		"--shm-size=16g"
+		"-v", "huggingface:/root/.cache/huggingface",
+		"--shm-size=32g"
 	],
 	"customizations": {
 		"vscode": {
