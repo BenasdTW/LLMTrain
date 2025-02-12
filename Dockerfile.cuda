@@ -20,11 +20,11 @@ RUN python3 -m pip install git+https://github.com/huggingface/trl
 RUN python3 -m pip install flash-attn --no-build-isolation
 RUN python3 -m pip install datasets numpy sentencepiece gguf protobuf matplotlib
 RUN python3 -m pip install bitsandbytes
-# RUN python3 -m pip install liger-kernel
-RUN python3 -m pip install liger-kernel-nightly
+RUN python3 -m pip install liger-kernel
+# RUN python3 -m pip install liger-kernel-nightly
 RUN python3 -m pip install llama-recipes
 RUN python3 -m pip install ollama
-RUN python3 -m pip install tensorboardX
+RUN python3 -m pip install tensorboard
 RUN python3 -m pip install qwen-vl-utils[decord]
 # RUN python3 -m pip install pymysql
 # RUN python3 -m pip install ollama pandas pymysql
