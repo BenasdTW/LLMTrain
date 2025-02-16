@@ -1,4 +1,4 @@
-# CUDA_VISIBLE_DEVICES=1 /opt/conda/bin/python /workspaces/LLMTrain/finetune_example.py
+# accelerate launch finetune_example_fsdp.py
 import re
 import torch
 from trl import SFTTrainer
@@ -7,6 +7,9 @@ from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from configs_and_helpers import quantization_config, lora_config_builder, loraplus_optimizer_builder, training_args_builder
 from datasets import load_dataset
+from accelerate import Accelerator
+
+# accelerator = Accelerator()
 
 output_name = "test"
 model_name = "Qwen/Qwen2.5-1.5B-Instruct"
@@ -86,7 +89,7 @@ print(f"{dataset=}")
 model = AutoLigerKernelForCausalLM.from_pretrained(
 # model = AutoModelForCausalLM.from_pretrained(
     model_name, 
-    device_map="auto", 
+    # device_map="auto", 
     # device_map={"": accelerator.process_index},
     # device_map="cuda:0", 
     use_cache=False,
@@ -102,17 +105,21 @@ model = get_peft_model(model, lora_config_builder())
 optim = loraplus_optimizer_builder(model, lr=2e-4)
 
 training_args = training_args_builder(output_name, eff_batch=128, device_batch=8, epochs=3)
-
+# training_args.gradient_checkpointing_kwargs={"use_reentrant": True}
 trainer = SFTTrainer(
     model=model,
     args=training_args,
     train_dataset=dataset,
     eval_dataset=eval_set,
-    optimizers=optim,
+    # optimizers=optim,
 )
 
 # Start training
 trainer.model.print_trainable_parameters()
+if getattr(trainer.accelerator.state, "fsdp_plugin", None):
+    from peft.utils.other import fsdp_auto_wrap_policy
+    fsdp_plugin = trainer.accelerator.state.fsdp_plugin
+    fsdp_plugin.auto_wrap_policy = fsdp_auto_wrap_policy(trainer.model)
 trainer.train()
 
 # Save the LoRA adapter model

@@ -1,4 +1,4 @@
-# CUDA_VISIBLE_DEVICES=1 /opt/conda/bin/python /workspaces/LLMTrain/finetune_example.py
+# accelerate launch finetune_example_ddp.py
 import re
 import torch
 from trl import SFTTrainer
@@ -7,6 +7,9 @@ from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from configs_and_helpers import quantization_config, lora_config_builder, loraplus_optimizer_builder, training_args_builder
 from datasets import load_dataset
+from accelerate import Accelerator
+
+accelerator = Accelerator()
 
 output_name = "test"
 model_name = "Qwen/Qwen2.5-1.5B-Instruct"
@@ -86,8 +89,8 @@ print(f"{dataset=}")
 model = AutoLigerKernelForCausalLM.from_pretrained(
 # model = AutoModelForCausalLM.from_pretrained(
     model_name, 
-    device_map="auto", 
-    # device_map={"": accelerator.process_index},
+    # device_map="auto", 
+    device_map={"": accelerator.process_index},
     # device_map="cuda:0", 
     use_cache=False,
     attn_implementation="flash_attention_2",

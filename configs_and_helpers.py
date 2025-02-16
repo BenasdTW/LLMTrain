@@ -2,11 +2,11 @@ import time
 import gc
 import torch
 import bitsandbytes as bnb
-from trl import SFTTrainer
 from peft import LoraConfig
 from peft.optimizers import create_loraplus_optimizer
 from transformers.trainer_utils import IntervalStrategy
 from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
+from trl import SFTConfig
 from qwen_vl_utils import process_vision_info
 
 
@@ -121,7 +121,7 @@ def lora_config_builder(r: int = 32, lora_alpha: int = 16, target_modules: str |
 def training_args_builder(output_name: str, eff_batch: int = 256, device_batch: int = 8, eval_batch = None, eval_accumulation_steps = 1, lr = 2e-4, epochs = 3):
     if eval_batch is None:
         eval_batch = device_batch
-    training_args = TrainingArguments(
+    training_args = SFTConfig(
         output_dir="./output",
         per_device_train_batch_size=device_batch,
         gradient_accumulation_steps=eff_batch // device_batch,
@@ -130,7 +130,7 @@ def training_args_builder(output_name: str, eff_batch: int = 256, device_batch: 
         # torch_empty_cache_steps=1,
         learning_rate=lr,
         num_train_epochs=epochs,
-        use_liger_kernel=True,
+        use_liger=True,
         logging_dir=f"./profile/{output_name}",
         logging_steps=1,
         report_to="tensorboard",

@@ -1,8 +1,14 @@
 __pycache__/
+.pytest_cache/
+.vscode/
+
 output/
-profile/
-model/
+trainer_output/
+unsloth_training_checkpoints/
+
 logs/
+model/
+profile/
 
 token.txt
 t.py
