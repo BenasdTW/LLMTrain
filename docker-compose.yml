@@ -8,8 +8,8 @@ services:
 
     # ports:
     #   - "8888:8888"  # Example port mapping
-    stdin_open: true
-    tty: true
-    # volumes:
-    #   - .:/workspaces
+    # stdin_open: true
+    # tty: true
+    volumes:
+      - .:/workspaces
 

@@ -9,6 +9,8 @@ RUN apt-get update && \
 # Upgrade pip
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install torch torchvision torchaudio
+WORKDIR /workspaces
+
 
 # Stage 2: Development with Git
 FROM base as dev-git
