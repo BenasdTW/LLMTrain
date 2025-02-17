@@ -13,3 +13,4 @@ services:
     volumes:
       - .:/workspaces
 
+    command: sleep infinity
