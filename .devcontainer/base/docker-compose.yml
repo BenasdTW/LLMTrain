@@ -10,6 +10,13 @@ services:
     # build:
     #   context: .
     #   dockerfile: .devcontainer/Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
 
     volumes:
       # Update this to wherever you want VS Code to mount the folder of your project
