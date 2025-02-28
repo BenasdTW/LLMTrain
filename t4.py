@@ -9,9 +9,11 @@ from configs_and_helpers import quantization_config, lora_config_builder, lorapl
 from datasets import load_dataset
 from accelerate import PartialState
 
-output_name = "qwen25_qlora_32_8"
+# output_name = "qwen25_qlora_32_8"
+output_name = "t"
+model_name = "Benasd/Qwen2.5-1.5B-Instruct-bnb-fsdp"
 # model_name = "Qwen/Qwen2.5-1.5B-Instruct"
-model_name = "Qwen/Qwen2.5-32B-Instruct"
+model_name = "./t"
 dataset_name = "NumbersStation/NSText2SQL"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
@@ -105,7 +107,9 @@ model = AutoLigerKernelForCausalLM.from_pretrained(
 # Configure LoRA adapters
 model = get_peft_model(model, lora_config_builder())
 
-training_args = training_args_builder(output_name, eff_batch=128, device_batch=32, gpu_count=2, eval_batch=16, eval_accumulation_steps=2, epochs=2)
+# optim = loraplus_optimizer_builder(model, lr=2e-4)
+
+training_args = training_args_builder(output_name, eff_batch=128, device_batch=16, gpu_count=2, eval_batch=16, eval_accumulation_steps=1, epochs=3)
 training_args.ddp_find_unused_parameters = False
 # training_args.gradient_checkpointing_kwargs={"use_reentrant": True}
 # model.enable_input_require_grads()
@@ -136,7 +140,7 @@ trainer.model.print_trainable_parameters()
 trainer.train()
 
 # Save the LoRA adapter model
-if trainer.is_fsdp_enabled:
-    trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
-trainer.save_model()
+trainer.model.save_pretrained(output_name)
+tokenizer.save_pretrained(output_name)
+
 

@@ -12,5 +12,12 @@ services:
     # tty: true
     volumes:
       - .:/workspaces
+      - huggingface:/root/.cache/huggingface
 
     command: sleep infinity
+
+
+volumes:
+  huggingface:
+    external: true
+

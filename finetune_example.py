@@ -102,6 +102,8 @@ model = get_peft_model(model, lora_config_builder())
 optim = loraplus_optimizer_builder(model, lr=2e-4)
 
 training_args = training_args_builder(output_name, eff_batch=128, device_batch=8, epochs=3)
+# training_args.use_liger = True
+training_args.gradient_checkpointing_kwargs={"use_reentrant": True}
 
 trainer = SFTTrainer(
     model=model,

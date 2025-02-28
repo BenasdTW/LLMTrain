@@ -4,3 +4,5 @@
 # /opt/conda/bin/python /workspaces/LLMTrain/FTF.py
 # /opt/conda/bin/python /workspaces/LLMTrain/FTT.py
 # /opt/conda/bin/python /workspaces/LLMTrain/TTT.py
+CUDA_VISIBLE_DEVICES=0 /opt/conda/bin/python /workspaces/LLMTrain/exp_lora_awq.py
+CUDA_VISIBLE_DEVICES=0 /opt/conda/bin/python /workspaces/LLMTrain/exp_lora_bnb.py

@@ -1,4 +1,4 @@
-# CUDA_VISIBLE_DEVICES=1 /opt/conda/bin/python /workspaces/LLMTrain/finetune_example.py
+# CUDA_VISIBLE_DEVICES=0 /opt/conda/bin/python /workspaces/LLMTrain/exp_lora.py
 import torch
 from trl import SFTTrainer
 from peft import get_peft_model
@@ -13,8 +13,9 @@ from transformers import Qwen2VLForConditionalGeneration, Qwen2_5_VLProcessor
 
 apply_liger_kernel_to_qwen2_vl()
 
-output_name = "qwen2vl_lora"
-model_id = "Qwen/Qwen2-VL-2B-Instruct"
+output_name = "qwen2vl_lora_awq"
+# model_id = "Qwen/Qwen2-VL-2B-Instruct"
+model_id = "Qwen/Qwen2-VL-2B-Instruct-AWQ"
 dataset_name = "HuggingFaceM4/ChartQA"
 system_message = """You are a Vision Language Model specialized in interpreting visual data from chart images.
 Your task is to analyze the provided chart image and respond to queries with concise answers, usually a single word, number, or short phrase.
@@ -33,8 +34,8 @@ model = Qwen2VLForConditionalGeneration.from_pretrained(
     # device_map={"": accelerator.process_index},
     # device_map="cuda:0", 
     # torch_dtype=torch.float16,
+    # quantization_config=quantization_config,
     torch_dtype=torch.bfloat16,  # Match input type
-    quantization_config=quantization_config,
     attn_implementation="flash_attention_2",
     use_cache=False
 )
@@ -49,14 +50,15 @@ print(f"{processor.tokenizer.pad_token_id=}")
 peft_config = LoraConfig(
     lora_alpha=16,
     lora_dropout=0.05,
-    r=8,
+    r=32,
     bias="none",
-    target_modules=["q_proj", "v_proj"],
+    target_modules=["qkv", "attn.proj", "fc1", "fc2", "mlp.0", "mlp.2", "q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    modules_to_save=["input_layernorm", "post_attention_layernorm", "norm"],
     task_type="CAUSAL_LM",
 )
 # Configure LoRA adapters
-# model = get_peft_model(model, lora_config_builder())
 model = get_peft_model(model, peft_config)
+# print(model)
 
 # LoRA+ Optimizer (ratio = 16)
 optim = loraplus_optimizer_builder(model, lr=2e-4)
@@ -111,4 +113,4 @@ trainer.train()
 # Save the LoRA adapter model
 trainer.save_model(training_args.output_dir)
 
-
+# 12.8 GB

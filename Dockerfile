@@ -26,8 +26,9 @@ RUN python3 -m pip install git+https://github.com/huggingface/transformers \
     ollama \
     tensorboard \
     qwen-vl-utils[decord]
+
 # RUN python3 -m pip install liger-kernel-nightly
-# RUN python3 -m pip install pymysql
+RUN python3 -m pip install autoawq --no-deps
 
 # Stage 3: Development with Stable Packages
 FROM base as dev-stable

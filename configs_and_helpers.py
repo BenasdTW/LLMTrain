@@ -118,13 +118,13 @@ def lora_config_builder(r: int = 32, lora_alpha: int = 16, target_modules: str |
 # Define Training Arguments
 # Effective batch size = per_device_train_batch_size * gradient_accumulation_steps
 #     = 256
-def training_args_builder(output_name: str, eff_batch: int = 256, device_batch: int = 8, eval_batch = None, eval_accumulation_steps = 1, lr = 2e-4, epochs = 3):
+def training_args_builder(output_name: str, eff_batch: int = 256, device_batch: int = 8, gpu_count: int = 1, eval_batch = None, eval_accumulation_steps = 1, lr = 2e-4, epochs = 3):
     if eval_batch is None:
         eval_batch = device_batch
     training_args = SFTConfig(
         output_dir="./output",
         per_device_train_batch_size=device_batch,
-        gradient_accumulation_steps=eff_batch // device_batch,
+        gradient_accumulation_steps=(eff_batch // device_batch) // gpu_count,
         per_device_eval_batch_size=eval_batch,
         eval_accumulation_steps=eval_accumulation_steps,
         # torch_empty_cache_steps=1,
