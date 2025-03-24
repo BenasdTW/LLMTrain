@@ -107,7 +107,7 @@ model = AutoLigerKernelForCausalLM.from_pretrained(
 model = get_peft_model(model, lora_config_builder())
 
 training_args = training_args_builder(output_name, eff_batch=128, device_batch=32, gpu_count=2, eval_batch=16, eval_accumulation_steps=2, epochs=2)
-training_args.ddp_find_unused_parameters = False
+# training_args.ddp_find_unused_parameters = False
 # training_args.gradient_checkpointing_kwargs={"use_reentrant": True}
 # model.enable_input_require_grads()
 class MySFTTrainer(SFTTrainer):
@@ -123,7 +123,8 @@ class MySFTTrainer(SFTTrainer):
         self.optimizer, _ = loraplus_optimizer_builder(self.model, lr=2e-4, loraplus_lr_ratio=8)
         self.create_scheduler(num_training_steps=num_training_steps, optimizer=self.optimizer)
 
-trainer = MySFTTrainer(
+# trainer = MySFTTrainer(
+trainer = SFTTrainer(
     model=model,
     args=training_args,
     train_dataset=dataset,

@@ -23,7 +23,7 @@ apply_liger_kernel_to_qwen2_vl()
 # device_string = "cuda:" + str(local_rank)
 
 output_name = "qwen2vl_lora_fsdp"
-model_id = "Qwen/Qwen2-VL-7B-Instruct"
+model_id = "Benasd/Qwen2.5-VL-72B-Instruct-bnb-fsdp"
 dataset_name = "HuggingFaceM4/ChartQA"
 system_message = """You are a Vision Language Model specialized in interpreting visual data from chart images.
 Your task is to analyze the provided chart image and respond to queries with concise answers, usually a single word, number, or short phrase.

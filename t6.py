@@ -5,13 +5,14 @@ from peft import get_peft_model
 from configs_and_helpers import quantization_config, lora_config_builder, loraplus_optimizer_builder, training_args_builder, vl_format_data
 from datasets import load_dataset
 from qwen_vl_utils import process_vision_info
-from liger_kernel.transformers import apply_liger_kernel_to_qwen2_vl
+# from liger_kernel.transformers import apply_liger_kernel_to_qwen2_vl
+from liger_kernel.transformers import apply_liger_kernel_to_qwen2_5_vl
 from peft import get_peft_model
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer
 from transformers import Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor
 
-apply_liger_kernel_to_qwen2_vl()
+# apply_liger_kernel_to_qwen2_5_vl()
 
 # output_name = "qwen2vl_lora_base"
 output_name = "t"
@@ -38,6 +39,8 @@ model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     attn_implementation="flash_attention_2",
     use_cache=False
 )
+
+apply_liger_kernel_to_qwen2_5_vl(model)
 
 processor = Qwen2_5_VLProcessor.from_pretrained(model_id)
 processor.padding_side = "right"  # Ensure padding is added to the right side

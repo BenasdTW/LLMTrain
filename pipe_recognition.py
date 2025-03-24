@@ -1,4 +1,4 @@
-# CUDA_VISIBLE_DEVICES=0 /opt/conda/bin/python /workspaces/LLMTrain/exp_lora.py
+# CUDA_VISIBLE_DEVICES=0 /opt/conda/bin/python /workspaces/LLMTrain/pipe_recognition.py
 import torch
 from trl import SFTTrainer
 from peft import get_peft_model
@@ -52,7 +52,7 @@ model = get_peft_model(model, lora_config_builder())
 # LoRA+ Optimizer (ratio = 16)
 optim = loraplus_optimizer_builder(model, lr=2e-4)
 
-training_args = training_args_builder(output_name, eff_batch=128, device_batch=8, epochs=3)
+training_args = training_args_builder(output_name, eff_batch=128, device_batch=16, epochs=3)
 training_args.dataset_kwargs = {"skip_prepare_dataset": True}
 
 # Create a data collator to encode text and image pairs

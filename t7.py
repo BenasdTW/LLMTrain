@@ -1,19 +1,27 @@
-# CUDA_VISIBLE_DEVICES=0 /opt/conda/bin/python /workspaces/LLMTrain/exp_lora.py
+# accelerate launch --config_file fsdp.yaml t7.py
+import os
 import torch
 from trl import SFTTrainer
 from peft import get_peft_model
 from configs_and_helpers import quantization_config, lora_config_builder, loraplus_optimizer_builder, training_args_builder, vl_format_data
 from datasets import load_dataset
 from qwen_vl_utils import process_vision_info
-from liger_kernel.transformers import apply_liger_kernel_to_qwen2_vl
+from liger_kernel.transformers import apply_liger_kernel_to_qwen2_5_vl
 from peft import get_peft_model
 from peft import LoraConfig, get_peft_model
-from trl import SFTTrainer
+from trl import SFTTrainer, get_kbit_device_map
 from transformers import Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor
+# from accelerate import Accelerator
+# from accelerate import PartialState
 
-apply_liger_kernel_to_qwen2_vl()
+apply_liger_kernel_to_qwen2_5_vl()
 
-# output_name = "qwen2vl_lora_base"
+# accelerator = Accelerator()
+# device_string = PartialState().process_index
+# device_map = {"": device_string}
+# local_rank = os.getenv("LOCAL_RANK")
+# device_string = "cuda:" + str(local_rank)
+
 output_name = "t"
 model_id = "Qwen/Qwen2.5-VL-3B-Instruct"
 dataset_name = "HuggingFaceM4/ChartQA"
@@ -30,10 +38,7 @@ test_dataset = [vl_format_data(sample, system_message) for sample in test_datase
 
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     model_id,
-    device_map="auto",
-    # device_map={"": accelerator.process_index},
-    # device_map="cuda:0", 
-    # torch_dtype=torch.float16,
+    device_map={'':torch.cuda.current_device()},
     torch_dtype=torch.bfloat16,  # Match input type
     attn_implementation="flash_attention_2",
     use_cache=False
@@ -47,13 +52,11 @@ print(f"{processor.tokenizer.eos_token_id=}")
 print(f"{processor.tokenizer.pad_token_id=}")
 
 # Configure LoRA adapters
-model = get_peft_model(model, lora_config_builder())
+model = get_peft_model(model, lora_config_builder(target_modules=["q_proj", "k_proj", "v_proj", "out_proj"]))
 
-# LoRA+ Optimizer (ratio = 16)
-optim = loraplus_optimizer_builder(model, lr=2e-4)
-
-training_args = training_args_builder(output_name, eff_batch=128, device_batch=8, epochs=3)
+training_args = training_args_builder(output_name, eff_batch=128, gpu_count=2, device_batch=1, epochs=3)
 training_args.dataset_kwargs = {"skip_prepare_dataset": True}
+training_args.ddp_find_unused_parameters = False
 
 # Create a data collator to encode text and image pairs
 def collator_fn(examples):
@@ -92,7 +95,6 @@ trainer = SFTTrainer(
     eval_dataset=eval_dataset,
     data_collator=collator_fn,
     processing_class=processor.tokenizer,
-    optimizers=optim,
 )
 
 # Start training
@@ -100,7 +102,8 @@ trainer.model.print_trainable_parameters()
 trainer.train()
 
 # Save the LoRA adapter model
+if trainer.is_fsdp_enabled:
+    trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
 trainer.save_model(training_args.output_dir)
 
-# 14.791 GB
-# 1:40:45
+
