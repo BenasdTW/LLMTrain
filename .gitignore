@@ -11,3 +11,9 @@ text2sql*/
 
 token.txt
 t.py
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
