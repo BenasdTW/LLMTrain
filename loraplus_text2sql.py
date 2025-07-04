@@ -91,6 +91,13 @@ output_log = f"./logs/{output_name}-{formatted_time}.log"
 
 # Start training
 trainer.model.print_trainable_parameters()
+# handle PEFT+FSDP case
+if getattr(trainer.accelerator.state, "fsdp_plugin", None):
+    from peft.utils.other import fsdp_auto_wrap_policy
+
+    fsdp_plugin = trainer.accelerator.state.fsdp_plugin
+    fsdp_plugin.auto_wrap_policy = fsdp_auto_wrap_policy(trainer.model)
+
 trainer.add_callback(CustomLoggingCallback(output_log))
 trainer.train()
 
