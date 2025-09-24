@@ -9,6 +9,9 @@ services:
     # build:
     #   context: .
     #   dockerfile: .devcontainer/Dockerfile
+    shm_size: '16g'
+    cap_add:
+      - SYS_ADMIN
     deploy:
       resources:
         reservations:

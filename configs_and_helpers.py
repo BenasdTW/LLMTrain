@@ -7,7 +7,7 @@ from peft.optimizers import create_loraplus_optimizer
 from transformers.trainer_utils import IntervalStrategy
 from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
 from trl import SFTConfig
-from qwen_vl_utils import process_vision_info
+# from qwen_vl_utils import process_vision_info
 
 
 def vl_format_data(sample, system_message=""):
