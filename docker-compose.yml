@@ -1,0 +1,22 @@
+services:
+  dev-git:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev-git  # Specify the dev-git stage
+
+    # ports:
+    #   - "8888:8888"  # Example port mapping
+    # stdin_open: true
+    # tty: true
+    volumes:
+      - .:/workspaces
+      - huggingface:/root/.cache/huggingface
+
+    command: sleep infinity
+
+
+volumes:
+  huggingface:
+    external: true
+

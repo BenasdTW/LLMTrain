@@ -1,13 +1,17 @@
-Llama-3.2-1B/
-lora_finetuned_model/
-lora_gpt2/
-finetuned-llama-text2sql/
+__pycache__/
+.pytest_cache/
+.vscode/
+
 output/
+trainer_output/
+unsloth_training_checkpoints/
+
+logs/
+model/
 profile/
-merged/
-new-text2sql/
-test*/
-text2sql*/
 
 token.txt
+docker-compose-server.yml
 t.py
+t.txt
+.env

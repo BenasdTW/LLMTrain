@@ -5,6 +5,9 @@ import torch
 model_original = "meta-llama/Llama-3.2-3B-Instruct"
 model_name = "./text2sql-3b-Instruct-loraplus-extra"
 
+model_original = "Qwen/Qwen2-VL-2B-Instruct"
+model_name = "./qwen2-2b-instruct-trl-sft-ChartQA"
+
 quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_compute_dtype=torch.bfloat16,
@@ -13,6 +16,7 @@ quantization_config = BitsAndBytesConfig(
 )
 # Load the Base Model
 # model = AutoLigerKernelForCausalLM.from_pretrained(
+# model = Qwen2VLForConditionalGeneration.from_pretrained(
 model = AutoModelForCausalLM.from_pretrained(
     # model_name, 
     model_original, 
