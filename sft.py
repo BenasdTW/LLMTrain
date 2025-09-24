@@ -25,7 +25,7 @@
 # Full training
 ```
 python sft.py \
-    --model_name_or_path Qwen/Qwen3-4B \
+    --model_name_or_path Qwen/Qwen3-4B-Instruct-2507 \
     --dataset_name trl-lib/Capybara \
     --learning_rate 2.0e-4 \
     --num_train_epochs 0.1 \
@@ -37,7 +37,7 @@ python sft.py \
     --logging_steps 1 \
     --eval_strategy steps \
     --eval_steps 100 \
-    --output_dir Qwen3-4B-SFT \
+    --output_dir output/Qwen3-4B-SFT \
     --use_liger_kernel \
     --attn_implementation=flash_attention_2 \
     --bf16=True \
@@ -47,7 +47,7 @@ python sft.py \
 # LoRA
 ```
 python sft.py \
-    --model_name_or_path Qwen/Qwen3-4B \
+    --model_name_or_path Qwen/Qwen3-4B-Instruct-2507 \
     --dataset_name trl-lib/Capybara \
     --learning_rate 2.0e-4 \
     --num_train_epochs 0.1 \
@@ -62,7 +62,7 @@ python sft.py \
     --use_peft \
     --lora_r 32 \
     --lora_alpha 16 \
-    --output_dir Qwen3-4B-SFT \
+    --output_dir output/Qwen3-4B-SFT \
     --use_liger_kernel \
     --attn_implementation=flash_attention_2 \
     --bf16=True \
@@ -72,7 +72,7 @@ python sft.py \
 # LoRA with 2 GPUs
 ```
 accelerate launch --config_file fsdp.yaml --num_processes 2 sft.py \
-    --model_name_or_path Qwen/Qwen3-4B \
+    --model_name_or_path Qwen/Qwen3-4B-Instruct-2507 \
     --dataset_name trl-lib/Capybara \
     --learning_rate 2.0e-4 \
     --num_train_epochs 0.1 \
